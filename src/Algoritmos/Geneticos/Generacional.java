@@ -21,14 +21,14 @@ import static main.main.NUMERO;
  */
 public class Generacional {
 
-    final int numParejas = 18;
-    public static boolean cruce;
+    final int numParejas = 7;
+    final int numIndividuos = 20;
     
     List<List<Integer>> frecuencias = new ArrayList<>();
     List<Integer> transmisores = new ArrayList<>();
     Restricciones restricciones;
 
-    int[] resultado = new int[ 50 ];
+    int[] resultado = new int[ numIndividuos ];
     List<List<Integer>> padres = new ArrayList<>();
     List<List<Integer>> hijos = new ArrayList<>();
     
@@ -44,11 +44,11 @@ public class Generacional {
         transmisores = _transmisores.transmisores;
         restricciones = _rest;
 
-        for ( int i = 0; i < 50; i ++ ) {
+        for ( int i = 0; i < numIndividuos; i ++ ) {
             padres.add(new ArrayList<>());
         }
 
-        for ( int i = 0; i < 50; i ++ ) {
+        for ( int i = 0; i < numIndividuos; i ++ ) {
             greedyInicial(i);
         }
 
@@ -131,12 +131,12 @@ public class Generacional {
     }
 
     void generarHijos () {
-        for ( int i = 0; i < 50; i ++ ) {
+        for ( int i = 0; i < numIndividuos; i ++ ) {
             Random numero = NUMERO;
-            int seleccionado = numero.nextInt(50);
+            int seleccionado = numero.nextInt(numIndividuos);
 
             Random numero2 = NUMERO;
-            int seleccionado2 = numero.nextInt(50);
+            int seleccionado2 = numero.nextInt(numIndividuos);
 
             if ( resultado[ seleccionado ] < resultado[ seleccionado2 ] ) {
                 hijos.add(i, padres.get(seleccionado));
@@ -152,10 +152,7 @@ public class Generacional {
         while( cont < numParejas ) {
             int individuo1 = cont;
             int individuo2 = cont + 1;
-
-            if ( !cruce )
-                algCruce2Puntos(individuo1, individuo2);
-            else algBX(individuo1, individuo2);
+            algBX(individuo1, individuo2);
             cont += 2;
         }
 
@@ -168,7 +165,7 @@ public class Generacional {
 
         //Seleccionamos el individuo a mutar
         Random numero = NUMERO;
-        int seleccionado = numero.nextInt(50);
+        int seleccionado = numero.nextInt(numIndividuos);
 
         int transmisorMut = numero.nextInt(transmisores.size());
         int frecAsociada = transmisores.get(transmisorMut);
@@ -276,11 +273,11 @@ public class Generacional {
         //Elitismo
 
         int aux = mejorResult;
-        int resultadoHijos[] = new int[ 50 ];
+        int resultadoHijos[] = new int[ numIndividuos ];
         //Buscamos el mejor individuo de la generación de padres
         int minimo = Integer.MAX_VALUE;
         int actual = 0;
-        for ( int i = 0; i < 50; i ++ ) {
+        for ( int i = 0; i < numIndividuos; i ++ ) {
             if ( resultado[ i ] < minimo ) {
                 minimo = resultado[ i ];
                 actual = i;
@@ -288,17 +285,18 @@ public class Generacional {
         }
 
         List<Integer> mejorIndividuo = padres.get(actual);
-
+        
+        /* Modificar todo esto, hay menos individuos a evaluar a cada iteracion */
         // Evaluamos los hijos
-        if ( idMutado <= 36 ) {
-            resultadoHijos = evaluar(hijos, 36);
-            numEvaluaciones += 36;
+        if ( idMutado <= 14 ) {
+            resultadoHijos = evaluar(hijos, 14);
+            numEvaluaciones += 14;
         } else {
             resultadoHijos = evaluar(hijos, idMutado);
-            numEvaluaciones += 37;
+            numEvaluaciones += 15;
         }
 
-        for ( int i = 36; i < 50; i ++ ) {
+        for ( int i = 14; i < numIndividuos; i ++ ) {
             if ( i != idMutado ) {
                 resultadoHijos[ i ] = resultado[ i ];
             }
@@ -308,7 +306,7 @@ public class Generacional {
         int maximo = Integer.MIN_VALUE;
         int actual2 = 0;
 
-        for ( int i = 0; i < 50; i ++ ) {
+        for ( int i = 0; i < numIndividuos; i ++ ) {
             if ( resultadoHijos[ i ] > maximo ) {
                 maximo = resultadoHijos[ i ];
                 actual2 = i;
@@ -348,12 +346,12 @@ public class Generacional {
     }
 
     public int[] evaluar ( List<List<Integer>> individuos, int mutado ) throws FileNotFoundException {
-        int[] resultados = new int[ 50 ];
+        int[] resultados = new int[ numIndividuos ];
 
-        for ( int i = 0; i < 36; i ++ ) {
+        for ( int i = 0; i < 14; i ++ ) {
             resultados[ i ] = rDiferencia(individuos.get(i), restricciones);
         }
-        if ( mutado >= 36 ) {
+        if ( mutado >= 14 ) {
             resultados[ mutado ] = rDiferencia(individuos.get(mutado), restricciones);
         }
 
@@ -366,14 +364,14 @@ public class Generacional {
         padres.clear();
         hijos.clear();
 
-        for ( int i = 0; i < 50; i ++ ) {
+        for ( int i = 0; i < numIndividuos; i ++ ) {
             padres.add(new ArrayList<>());
         }
 
         padres.set(0, mejorSolucion);
         resultado[ 0 ] = mejorResult;
 
-        for ( int i = 1; i < 50; i ++ ) {
+        for ( int i = 1; i < numIndividuos; i ++ ) {
             greedyInicial(i);
         }
 
@@ -382,7 +380,7 @@ public class Generacional {
     private boolean comprobarConvergencia () {
 
         int[] auxiliar;
-        auxiliar = Arrays.copyOf(resultado, 50);
+        auxiliar = Arrays.copyOf(resultado, numIndividuos);
         Arrays.sort(auxiliar);
 
         int contador = 1;
@@ -390,7 +388,7 @@ public class Generacional {
         int maximo = Integer.MIN_VALUE;
 
         for ( int i = 1; i < auxiliar.length; i ++ ) {
-            if ( contador >= 40 ) {
+            if ( contador >= 16 ) {
                 convergencia = true;
                 break;
             }
@@ -415,7 +413,7 @@ public class Generacional {
             contador = 1;
             convergencia = false;
             for ( int i = 1; i < auxiliarP.size(); i ++ ) {
-                if ( contador >= 40 ) {
+                if ( contador >= 16 ) {
                     convergencia = true;
                     break;
                 }
@@ -428,12 +426,12 @@ public class Generacional {
         }
 
         return convergencia;
-    }
-
+    } 
+    
     public void resMejorIndividuo () throws FileNotFoundException {
         int minimo = Integer.MAX_VALUE;
         int actual = 0;
-        for ( int i = 0; i < 50; i ++ ) {
+        for ( int i = 0; i < numIndividuos; i ++ ) {
             if ( resultado[ i ] < minimo ) {
                 minimo = resultado[ i ];
                 actual = i;
@@ -453,7 +451,7 @@ public class Generacional {
     public int resultadoFinal () {
         int minimo = Integer.MAX_VALUE;
         int actual = 0;
-        for ( int i = 0; i < 50; i ++ ) {
+        for ( int i = 0; i < numIndividuos; i ++ ) {
             if ( resultado[ i ] < minimo ) {
                 minimo = resultado[ i ];
                 actual = i;
